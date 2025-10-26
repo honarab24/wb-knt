@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>IPTV Live Player</title>
+  <title>konektv</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
   <style>
     html, body {
@@ -187,10 +187,6 @@
       <button onclick="window.location.href='https://freehdmovies.to/home'">Movies</button>
       <button onclick="window.location.href='https://vip-honortv.netlify.app/app/hmtdflix.html'">HMTDFLIX</button>
       <button id="fullscreenBtn">Fullscreen</button>
-      <select id="themeSelect">
-        <option value="neon">🌈 Neon Glow</option>
-        <option value="aqua">💚 Aqua Cyan</option>
-        <option value="sunset">🔥 Sunset Red</option>
       </select>
     </div>
     <video id="video" autoplay controls></video>
@@ -211,7 +207,7 @@
         logo: 'https://i.imgur.com/43nZ2rv.png',
         type: 'mpegdash',
         manifestUri: 'https://qp-pldt-live-bpk-02-prod.akamaized.net/bpk-tv/cg_a2z/default/index.mpd',
-        clearKey: { 'f703e4c8ec9041eeb5028ab4248fa094': 'c22f2162e176eee6273a5d0b68d19530' },
+        clearKey: {'f703e4c8ec9041eeb5028ab4248fa094': 'c22f2162e176eee6273a5d0b68d19530' },
         category: 'PHILIPINES CHANNEL'
       },
       {
@@ -340,23 +336,7 @@
         clearKey: { '0bf00921bec94a65a124fba1ef52b1cd': '0f1488487cbe05e2badc3db53ae0f29f' },
         category: 'PHILIPINES CHANNEL'
       },
-  {
-        name: 'Nickelodeon',
-        logo: 'https://i.imgur.com/tIRSRoR.png',
-        type: 'mpegdash',
-        manifestUri: 'https://linearjitp-playback.astro.com.my/dash-wv/linear/2511/default_primary/default/index.mpd',
-        clearKey: { 'd8520e96a1283ab6e5be538474bfa810': 'bda5f7bbc1e44096f779a0619fe9881f' },
-        category: 'PHILIPINES CHANNEL'
-      },
-{
-        name: 'Nick Jr',
-        logo: 'https://i.imgur.com/nliH2PY.png',
-        type: 'mpegdash',
-        manifestUri: 'https://linearjitp-playback.astro.com.my/dash-wv/linear/9982/default_primary/default/index.mpd',
-        clearKey: { 'fa65220c9f76e424173899df533a6d10': 'b4abbee95b69b3e80a0d141272c870db' },
-        category: 'PHILIPINES CHANNEL'
-      },
-{
+      {
         name: 'HBO',
         logo: 'https://i.imgur.com/fHBIgs6.png',
         type: 'mpegdash',
