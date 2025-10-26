@@ -46,8 +46,10 @@
       margin-right: 10px;
     }
 
-    .channel:hover, .channel:focus {
+    .channel:hover, .channel.active {
+      background: rgba(255,255,255,0.2);
       transform: scale(1.05);
+      border-radius: 8px;
     }
 
     .content {
@@ -86,7 +88,6 @@
       border-radius: 10px;
     }
 
-    /* Portrait Lock Notice */
     @media screen and (orientation: portrait) {
       body::before {
         content: "Please rotate your device to landscape mode.";
@@ -113,7 +114,7 @@
       <input type="text" id="searchInput" placeholder="Search channel..." />
       <button id="fullscreenBtn">Fullscreen</button>
     </div>
-    <video id="video" autoplay controls></video>
+    <video id="video" autoplay controls playsinline muted></video>
   </div>
 
   <script>
@@ -142,16 +143,22 @@
     const searchInput = document.getElementById('searchInput');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
 
+    let currentPlayer = null;
+
     async function initPlayer(channel) {
       if (!shaka.Player.isBrowserSupported()) {
         alert('Browser not supported for Shaka Player.');
         return;
       }
 
-      if (window.player) window.player.destroy();
+      // Destroy old player if exists
+      if (currentPlayer) {
+        await currentPlayer.destroy();
+        currentPlayer = null;
+      }
 
       const player = new shaka.Player(video);
-      window.player = player;
+      currentPlayer = player;
 
       try {
         if (channel.type === 'mpegdash') {
@@ -160,9 +167,22 @@
         } else {
           video.src = channel.manifestUri;
         }
+
+        // Auto play after load
+        video.play().catch(err => {
+          console.warn('Autoplay prevented:', err);
+        });
+
+        highlightCurrentChannel(channel.name);
       } catch (e) {
         console.error('Error loading channel:', e);
       }
+    }
+
+    function highlightCurrentChannel(name) {
+      document.querySelectorAll('.channel').forEach(el => {
+        el.classList.toggle('active', el.dataset.name === name);
+      });
     }
 
     function renderChannels() {
@@ -178,6 +198,7 @@
       filtered.forEach(ch => {
         const div = document.createElement('div');
         div.className = 'channel';
+        div.dataset.name = ch.name;
         div.innerHTML = `<img src="${ch.logo}" alt=""><span>${ch.name}</span>`;
         div.onclick = () => initPlayer(ch);
         channelList.appendChild(div);
@@ -193,7 +214,6 @@
       categoryFilter.appendChild(opt);
     });
 
-    // Event listeners
     searchInput.addEventListener('input', renderChannels);
     categoryFilter.addEventListener('change', renderChannels);
     fullscreenBtn.addEventListener('click', () => {
@@ -204,7 +224,7 @@
       }
     });
 
-    // Load channels and auto-play first one
+    // Load and auto-play first channel
     renderChannels();
     initPlayer(channels[0]);
   </script>
