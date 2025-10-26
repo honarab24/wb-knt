@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>KonekTV</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+    body {
+      display: flex;
+      flex-direction: row;
+      color: white;
+      background: radial-gradient(circle at top left, #1a1a1a, #000);
+    }
+
+    .sidebar {
+      width: 35%;
+      max-width: 320px;
+      overflow-y: auto;
+      height: 100vh;
+      background: linear-gradient(180deg, #ff0077, #7b00ff);
+    }
+
+    .channel {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .channel img {
+      height: 40px;
+      width: 40px;
+      object-fit: contain;
+      margin-right: 10px;
+    }
+
+    .channel:hover, .channel:focus {
+      transform: scale(1.05);
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      gap: 10px;
+      border-radius: 10px;
+      padding: 10px;
+      background: linear-gradient(90deg, #00c3ff, #ffff1c);
+    }
+
+    .controls input,
+    .controls button,
+    .controls select {
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+      color: white;
+      background: rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      max-height: 90vh;
+      background-color: black;
+      border-radius: 10px;
+    }
+
+    /* Portrait Lock Notice */
+    @media screen and (orientation: portrait) {
+      body::before {
+        content: "Please rotate your device to landscape mode.";
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: black; color: white;
+        z-index: 9999;
+        font-size: 1.5em;
+        display: flex; align-items: center; justify-content: center;
+        text-align: center;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" id="channelList"></div>
+  <div class="content">
+    <div class="controls">
+      <select id="categoryFilter">
+        <option value="">All Categories</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="Search channel..." />
+      <button id="fullscreenBtn">Fullscreen</button>
+    </div>
+    <video id="video" autoplay controls></video>
+  </div>
+
+  <script>
+    const channels = [
+      {
+        name: 'TV5',
+        logo: 'https://i.imgur.com/Ddyfzrn.png',
+        type: 'mpegdash',
+        manifestUri: 'https://qp-pldt-live-bpk-02-prod.akamaized.net/bpk-tv/tv5_hd/default1/index.mpd',
+        clearKey: { '2615129ef2c846a9bbd43a641c7303ef': '07c7f996b1734ea288641a68e1cfdc4d' },
+        category: 'PHILIPPINES CHANNEL'
+      },
+      {
+        name: 'A2Z',
+        logo: 'https://i.imgur.com/43nZ2rv.png',
+        type: 'mpegdash',
+        manifestUri: 'https://qp-pldt-live-bpk-02-prod.akamaized.net/bpk-tv/cg_a2z/default/index.mpd',
+        clearKey: {'f703e4c8ec9041eeb5028ab4248fa094': 'c22f2162e176eee6273a5d0b68d19530' },
+        category: 'PHILIPPINES CHANNEL'
+      }
+    ];
+
+    const video = document.getElementById('video');
+    const channelList = document.getElementById('channelList');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const searchInput = document.getElementById('searchInput');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    async function initPlayer(channel) {
+      if (!shaka.Player.isBrowserSupported()) {
+        alert('Browser not supported for Shaka Player.');
+        return;
+      }
+
+      if (window.player) window.player.destroy();
+
+      const player = new shaka.Player(video);
+      window.player = player;
+
+      try {
+        if (channel.type === 'mpegdash') {
+          player.configure({ drm: { clearKeys: channel.clearKey } });
+          await player.load(channel.manifestUri);
+        } else {
+          video.src = channel.manifestUri;
+        }
+      } catch (e) {
+        console.error('Error loading channel:', e);
+      }
+    }
+
+    function renderChannels() {
+      const category = categoryFilter.value.toLowerCase();
+      const search = searchInput.value.toLowerCase();
+      channelList.innerHTML = '';
+
+      const filtered = channels.filter(ch =>
+        (!category || ch.category.toLowerCase().includes(category)) &&
+        (!search || ch.name.toLowerCase().includes(search))
+      );
+
+      filtered.forEach(ch => {
+        const div = document.createElement('div');
+        div.className = 'channel';
+        div.innerHTML = `<img src="${ch.logo}" alt=""><span>${ch.name}</span>`;
+        div.onclick = () => initPlayer(ch);
+        channelList.appendChild(div);
+      });
+    }
+
+    // Populate category filter
+    const categories = [...new Set(channels.map(ch => ch.category))];
+    categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      categoryFilter.appendChild(opt);
+    });
+
+    // Event listeners
+    searchInput.addEventListener('input', renderChannels);
+    categoryFilter.addEventListener('change', renderChannels);
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Load channels and auto-play first one
+    renderChannels();
+    initPlayer(channels[0]);
+  </script>
+</body>
+</html>
